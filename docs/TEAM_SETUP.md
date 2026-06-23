@@ -113,8 +113,17 @@ Edit `_render_about_tab()` in [`streamlit_app.py`](../streamlit_app.py) with you
 | Streamlit upload shows wrong OCR | Confirm `predict_from_image` returns updated dict keys |
 | Empty submission rows | Run `setup_private_images.py` or use `--limit` on sample IDs only |
 
-## Deploy Streamlit (optional)
+## 7. Deploy Streamlit Cloud (demo cho BTC / reviewer)
 
-1. Push your fork to GitHub (public).
-2. [share.streamlit.io](https://share.streamlit.io) → New app → `streamlit_app.py`.
-3. Live test tab works with **Upload** only unless you bundle images separately.
+Repo đã sẵn sàng deploy: `requirements.txt`, `packages.txt`, `.python-version`, `.streamlit/config.toml`.
+
+**Quick steps:**
+
+1. Push fork **public** lên GitHub.
+2. [share.streamlit.io](https://share.streamlit.io) → Sign in with GitHub → **Create app**.
+3. Repository: your fork · Branch: `main` · Main file: `streamlit_app.py`.
+4. Deploy → copy URL → set `STREAMLIT_APP_URL` in [`team_config.py`](../team_config.py).
+
+Chi tiết + xử lý lỗi: **[docs/DEPLOY_STREAMLIT.md](../docs/DEPLOY_STREAMLIT.md)**
+
+> Live test trên Cloud dùng **upload ảnh** (không có full 1,202 private images). Batch submission chạy local: `python scripts/run_submission.py`.

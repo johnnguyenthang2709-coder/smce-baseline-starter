@@ -1,3 +1,6 @@
+# Streamlit secrets (local only — see .streamlit/secrets.toml.example)
+.streamlit/secrets.toml
+
 # Python
 __pycache__/
 *.py[cod]

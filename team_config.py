@@ -13,6 +13,7 @@ TEAM_NAME = "Team ABC"
 TEAM_MEMBERS = "[Member 1], [Member 2], [Member 3]"
 GITHUB_REPO = "https://github.com/your-team/ura-hackathon-team-abc"
 OTHER_RESOURCE = "https://example.com/other-resource"
+STREAMLIT_APP_URL = ""  # e.g. "https://ura-team-abc.streamlit.app" after deploy
 
 
 # Streamlit page copy

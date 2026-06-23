@@ -308,12 +308,14 @@ def _render_about_tab() -> None:
     )
 
     st.subheader("8. Liên kết")
-    st.markdown(
-        f"""
-        - **Tài liệu setup:** [docs/TEAM_SETUP.md](docs/TEAM_SETUP.md)
-        - **Other resource:** [{cfg.OTHER_RESOURCE}]({cfg.OTHER_RESOURCE})
-        """
-    )
+    links = [
+        f"- **Repository:** [{cfg.GITHUB_REPO}]({cfg.GITHUB_REPO})",
+        "- **Deploy guide:** [docs/DEPLOY_STREAMLIT.md](docs/DEPLOY_STREAMLIT.md)",
+        f"- **Other resource:** [{cfg.OTHER_RESOURCE}]({cfg.OTHER_RESOURCE})",
+    ]
+    if cfg.STREAMLIT_APP_URL:
+        links.insert(1, f"- **Live demo (Streamlit Cloud):** [{cfg.STREAMLIT_APP_URL}]({cfg.STREAMLIT_APP_URL})")
+    st.markdown("\n".join(links))
 
 
 tab_live, tab_about = st.tabs(["Live test", "About"])

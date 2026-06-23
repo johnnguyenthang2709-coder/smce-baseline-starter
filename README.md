@@ -137,12 +137,27 @@ See [`solution/README.md`](solution/README.md).
 
 - [Team setup guide](docs/TEAM_SETUP.md)
 - [Submission format & local scoring](docs/SUBMISSION.md)
+- [Deploy Streamlit Cloud](docs/DEPLOY_STREAMLIT.md)
 - [Private test data](data/private_test/README.md)
 
 ## Deploy Streamlit Cloud
 
-1. Push your fork to GitHub (public).
-2. [share.streamlit.io](https://share.streamlit.io) → New app → `streamlit_app.py`.
+Deploy demo lên **Streamlit Community Cloud** (miễn phí, gắn GitHub):
+
+1. Chỉnh [`team_config.py`](team_config.py) và push repo **public** lên GitHub.
+2. [share.streamlit.io](https://share.streamlit.io) → **Create app** → Main file: `streamlit_app.py`.
+3. Sau deploy, điền `STREAMLIT_APP_URL` trong `team_config.py`.
+
+**Hướng dẫn đầy đủ:** [docs/DEPLOY_STREAMLIT.md](docs/DEPLOY_STREAMLIT.md) (checklist, troubleshooting, secrets, redeploy).
+
+Files Cloud cần:
+
+| File | Mục đích |
+|------|----------|
+| [`requirements.txt`](requirements.txt) | Python packages |
+| [`packages.txt`](packages.txt) | Apt libs cho OpenCV/EasyOCR |
+| [`.python-version`](.python-version) | Python 3.11 trên Cloud |
+| [`.streamlit/config.toml`](.streamlit/config.toml) | Theme UI |
 
 ## Current status
 
