@@ -51,11 +51,13 @@ ura-hackathon-template/
 │   ├── product_model.py
 │   ├── baseline_notebook.ipynb
 │   └── README.md
-├── shared/                  # Data path helpers (keep)
-│   └── data_utils.py
+├── shared/                  # Template helpers (do not replace)
+│   ├── data_utils.py
+│   └── benchmark.py         # timing + footprint (always used by Streamlit)
 ├── scripts/
 │   ├── setup_private_images.py
-│   └── run_submission.py
+│   ├── run_submission.py
+│   └── benchmark_solution.py
 ├── data/
 │   ├── train_labels.csv
 │   └── private_test/
@@ -64,11 +66,11 @@ ura-hackathon-template/
 └── private_test/metric.py   # Official scoring — do not edit
 ```
 
-| Customize | Keep as-is |
-|-----------|------------|
-| `team_config.py` | `shared/`, `scripts/`, `data/` layout |
-| `solution/*.py` + notebook | `private_test/metric.py` |
-| `assets/` logos | `streamlit_app.py` structure (About text optional) |
+| Customize | Keep as-is (template-owned) |
+|-----------|----------------------------|
+| `team_config.py` + `MODEL_PROFILE` | `shared/benchmark.py`, `shared/data_utils.py` |
+| `solution/*.py` + notebook | `streamlit_app.py` core, `scripts/benchmark_solution.py` |
+| `assets/` logos | `private_test/metric.py` |
 | About tab content | Submission column format |
 
 ---
@@ -370,11 +372,44 @@ External reference: [Streamlit Cloud docs](https://docs.streamlit.io/streamlit-c
 
 ```python
 from PIL import Image
-from solution import predict_from_image
+from shared.benchmark import run_predict_with_metrics, get_model_profile
 
-result = predict_from_image(Image.open("path/to.jpg"))
-# {"ocr_text": "...", "brand_name": "...", "product_name": "..."}
+result = run_predict_with_metrics(Image.open("path/to.jpg"))
+# timing_ms always present (measured by template layer)
+
+profile = get_model_profile()  # reads team_config.MODEL_PROFILE
 ```
+
+Teams implement **`solution.pipeline.predict_from_image()`** only. Streamlit and CLI benchmark call **`shared/benchmark.py`** — do not replace that module.
+
+## Lightweight model — how to measure
+
+Teams demonstrate a **lightweight** pipeline with two signals:
+
+| Signal | Where | What to report |
+|--------|-------|----------------|
+| **Latency** | `shared/benchmark.py` → `timing_ms` / deploy smoke | ms per image (avg / p95) |
+| **Footprint** | `team_config.MODEL_PROFILE` | Pipeline description, product-head MB, CPU/GPU |
+
+**Streamlit (automatic on deploy):**
+
+- **Live test** uses `run_predict_with_metrics()` — timing always logged
+- **Deploy smoke benchmark** runs once on first load (1 sample image, cached)
+- **Model footprint** expander reads `MODEL_PROFILE`
+
+**CLI benchmark:**
+
+```bash
+python scripts/benchmark_solution.py --limit 6
+```
+
+Example output: avg latency, p50/p95, plus JSON model profile. Update `MODEL_PROFILE` in `team_config.py` when you swap models.
+
+**Tips for a lighter stack:**
+
+- Prefer `opencv-python-headless` + smaller OCR (or API) over full PyTorch stacks when possible
+- Keep trainable weights in-repo small (sklearn, regex, quantized models)
+- Report **warmup** separately — first run loads EasyOCR weights (~200 MB download)
 
 ---
 

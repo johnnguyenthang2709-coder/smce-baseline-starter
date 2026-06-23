@@ -46,3 +46,17 @@ THEME_MUTED = "#5C6B8A"
 # Default inference settings (override inside solution/pipeline.py if needed)
 
 DEFAULT_MIN_CONF = 0.35
+
+
+# Model footprint (edit when you change OCR / models — benchmark layer reads this)
+
+MODEL_PROFILE: dict[str, str | float | None] = {
+    "pipeline": "EasyOCR (vi+en) + regex brands + sklearn product head",
+    "runtime_device": "CPU",
+    "product_head_mb": None,  # auto-estimate when None
+    "ocr_backend_note": "EasyOCR weights ~200 MB (downloaded once, not in repo)",
+    "lightweight_notes": (
+        "Baseline is CPU-friendly; product head is a few MB. "
+        "Swap OCR for a lighter stack to improve latency on Cloud."
+    ),
+}

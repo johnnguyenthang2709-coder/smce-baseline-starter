@@ -2,27 +2,24 @@
 Team solution pipeline — replace this module (and siblings) with your own approach.
 
 The Streamlit demo and submission script import:
-    predict_from_image(img) -> {"ocr_text", "brand_name", "product_name"}
+    predict_from_image(img) -> {"ocr_text", "brand_name", "product_name", "timing_ms"?}
+    get_model_profile() -> see shared/benchmark.py (template-owned)
 """
 
 from __future__ import annotations
 
 import re
+import time
 from functools import lru_cache
-from typing import Callable
+from typing import Any, Callable
 
 import numpy as np
-import pandas as pd
 from PIL import Image, ImageEnhance, ImageFilter
 
 from shared.data_utils import load_train_labels
 from solution.brand_rules import extract_brand_product, extract_product
 from solution.product_model import ProductPredictor
 from team_config import DEFAULT_MIN_CONF
-
-
-# Image preprocessing + OCR (baseline: EasyOCR vi+en, CPU)
-
 
 
 def preprocess(img: Image.Image, max_dim: int = 1280) -> Image.Image:
@@ -64,19 +61,20 @@ def run_ocr_on_image(img: Image.Image, reader, min_conf: float = DEFAULT_MIN_CON
         return ""
 
 
-
-# Brand + product extraction (baseline: regex rules + optional sklearn head)
-
-
-
 @lru_cache(maxsize=1)
-def _product_predict_fn() -> Callable[[str], str] | None:
+def _product_model() -> ProductPredictor | None:
     labels = load_train_labels()
     if labels is None:
         return None
     model = ProductPredictor(min_class_count=3, prob_threshold=0.60, max_features=3000)
     model.fit(labels, extract_product)
-    return model.predict
+    return model
+
+
+@lru_cache(maxsize=1)
+def _product_predict_fn() -> Callable[[str], str] | None:
+    model = _product_model()
+    return model.predict if model else None
 
 
 def predict_private(
@@ -98,16 +96,36 @@ def predict_from_text(ocr_text: str) -> tuple[str, str]:
 def predict_from_image(
     img: Image.Image,
     min_conf: float = DEFAULT_MIN_CONF,
-) -> dict[str, str]:
+    *,
+    include_timing: bool = True,
+) -> dict[str, Any]:
     """
     Main entry point for Streamlit + batch submission.
 
     Returns dict with keys: ocr_text, brand_name, product_name
+    Optional timing_ms: {ocr, extract, total} in milliseconds.
     """
+    t0 = time.perf_counter()
+
+    t_ocr = time.perf_counter()
     ocr_text = run_ocr_on_image(img, get_ocr_reader(), min_conf)
+    ocr_ms = (time.perf_counter() - t_ocr) * 1000
+
+    t_extract = time.perf_counter()
     brand, product = predict_private(ocr_text, _product_predict_fn())
-    return {
+    extract_ms = (time.perf_counter() - t_extract) * 1000
+
+    total_ms = (time.perf_counter() - t0) * 1000
+
+    result: dict[str, Any] = {
         "ocr_text": ocr_text,
         "brand_name": brand,
         "product_name": product,
     }
+    if include_timing:
+        result["timing_ms"] = {
+            "ocr": round(ocr_ms, 1),
+            "extract": round(extract_ms, 1),
+            "total": round(total_ms, 1),
+        }
+    return result
